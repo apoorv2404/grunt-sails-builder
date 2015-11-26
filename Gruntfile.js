@@ -31,10 +31,9 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     sails_builder: {
       default_options: {
-        options: {
-        },
+        options: {},
         files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
+
         }
       },
       custom_options: {
@@ -45,6 +44,16 @@ module.exports = function(grunt) {
         files: {
           'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
         }
+      },
+      build: {
+        options: {
+          swaggerFileName: 'swagger.json',
+          jsenFileName: 'jsenRules.json',
+          routesFile: 'routes.js',
+          swaggerSpecs: 'routeTemplates/src/swaggerSpecs.json'
+        },
+        src: ['routeTemplates/src/controllers/**/*.json'],
+        dest: ['routeTemplates/build/']
       }
     },
 

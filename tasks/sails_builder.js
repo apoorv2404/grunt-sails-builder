@@ -8,41 +8,75 @@
 
 'use strict';
 
+var fs = require('fs');
+var glob = require('glob');
+var async = require('async');
+var q = require('q');
+var BuildUtility = require('./BuildUtility');
+
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+  grunt.registerMultiTask('sails_builder',
+    'Grunt tool for generating routes, validation and swagger from one file',
+    function() {
 
-  grunt.registerMultiTask('sails_builder', 'Grunt tool for generating routes, validation and swagger from one file', function() {
-    console.log('Here: ', this.target, this.data);
+      var done = this.async();
+      var gruntOptions = this.data.options;
 
-    // // Merge task-specific and/or target-specific options with these defaults.
-    // var options = this.options();
-    //
-    // this.files.forEach(function(f) {
-    //   // Concat specified files.
-    //   var src = f.src.filter(function(filepath) {
-    //     // Warn on and remove invalid source files (if nonull was set).
-    //     if (!grunt.file.exists(filepath)) {
-    //       grunt.log.warn('Source file "' + filepath + '" not found.');
-    //       return false;
-    //     } else {
-    //       return true;
-    //     }
-    //   }).map(function(filepath) {
-    //     // Read file source.
-    //     return grunt.file.read(filepath);
-    //   }).join(grunt.util.normalizelf(options.separator));
-    //
-    //   // Handle options.
-    //   src += options.punctuation;
-    //
-    //   // Write the destination file.
-    //   grunt.file.write(f.dest, src);
-    //
-    //   // Print a success message.
-    //   grunt.log.writeln('File "' + f.dest + '" created.');
-    // });
-  });
+      //console.log('options: ', gruntOptions);
 
+      var swaggerFileName = gruntOptions && gruntOptions.swaggerFileName ? gruntOptions.swaggerFileName :
+        'swagger.json';
+
+      var jsenFileName = gruntOptions && gruntOptions.jsenFileName ? gruntOptions.jsenFileName :
+        'jsenRules.json';
+
+      var swaggerSpecFile = gruntOptions && gruntOptions.swaggerSpecs ? gruntOptions.swaggerSpecs :
+        'swaggerSpecs.json';
+
+      if (grunt.file.exists(swaggerFileName)) {
+        grunt.file.delete(swaggerFileName);
+      }
+      if (grunt.file.exists(jsenFileName)) {
+        grunt.file.delete(jsenFileName);
+      }
+
+      var sourceRoutes = this.data.src[0];
+      var destRoutes = this.data.dest[0];
+      var files = glob.sync(sourceRoutes);
+      var options = {
+        swaggerOutput: destRoutes + swaggerFileName,
+        jsenOutput: destRoutes + jsenFileName,
+        swaggerSpecs: swaggerSpecFile
+      };
+      var buildUtil = BuildUtility(options);
+
+      var fileWorker = function(task, callback) {
+        buildUtil.build(task)
+          .then(function() {
+            console.log('response');
+            callback();
+          })
+          .catch(function(err) {
+            console.log('Error : ', err);
+            callback(err);
+          });
+      };
+
+      var fileQueue = async.queue(fileWorker, 1);
+
+      for (var i = 0; i < files.length; i++) {
+        var fileContents = JSON.parse(grunt.file.read(files[i]));
+
+        fileQueue.push(fileContents, function(err) {
+          if (err) {
+            fileQueue.kill();
+            done(err);
+          }
+        });
+      }
+      fileQueue.drain = function() {
+        done();
+      };
+    });
 };
