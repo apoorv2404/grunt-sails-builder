@@ -1,7 +1,7 @@
 {
   "name": "grunt-sails-builder",
   "description": "Grunt tool for generating routes, validation and swagger from one file",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "homepage": "https://github.com/apoorv2404/grunt-sails-builder",
   "author": {
     "name": "Apoorv Agrawal",
