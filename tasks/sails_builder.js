@@ -34,27 +34,26 @@ module.exports = function(grunt) {
       var swaggerSpecFile = gruntOptions && gruntOptions.swaggerSpecs ? gruntOptions.swaggerSpecs :
         'swaggerSpecs.json';
 
-      if (grunt.file.exists(swaggerFileName)) {
-        grunt.file.delete(swaggerFileName);
+      var sourceRoutes = this.data.src;
+      var destRoutes = this.data.dest;
+      var files = grunt.file.expand(sourceRoutes + 'controllers/**/*.json');
+      if (grunt.file.exists(destRoutes + swaggerFileName)) {
+        grunt.file.delete(destRoutes + swaggerFileName);
       }
-      if (grunt.file.exists(jsenFileName)) {
-        grunt.file.delete(jsenFileName);
+      if (grunt.file.exists(destRoutes + jsenFileName)) {
+        grunt.file.delete(destRoutes + jsenFileName);
       }
-
-      var sourceRoutes = this.data.src[0];
-      var destRoutes = this.data.dest[0];
-      var files = glob.sync(sourceRoutes);
       var options = {
         swaggerOutput: destRoutes + swaggerFileName,
         jsenOutput: destRoutes + jsenFileName,
-        swaggerSpecs: swaggerSpecFile
+        swaggerSpecs: sourceRoutes + swaggerSpecFile,
+        grunt: grunt
       };
       var buildUtil = BuildUtility(options);
 
       var fileWorker = function(task, callback) {
         buildUtil.build(task)
           .then(function() {
-            console.log('response');
             callback();
           })
           .catch(function(err) {

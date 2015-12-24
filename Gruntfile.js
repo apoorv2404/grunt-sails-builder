@@ -23,6 +23,25 @@ module.exports = function(grunt) {
       }
     },
 
+    release: {
+      options: {
+        changelog: false,
+        add: true,
+        commit: true,
+        tag: false,
+        push: true,
+        pushTags: true,
+        npm: true,
+        npmtag: false,
+        commitMessage: '[Grunt-Sails-Builder] Release Commit <%= version %>',
+        tagMessage: 'Release Build <%= version %>',
+        github: {
+          repo: 'apoorv2404/grunt-sails-builder',
+          accessTokenVar: 'GITHUB_ACCESS_TOKEN'
+        }
+      }
+    },
+
     // Before generating any new files, remove any previously-created files.
     clean: {
       tests: ['tmp']
@@ -30,30 +49,15 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     sails_builder: {
-      default_options: {
-        options: {},
-        files: {
-
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
       build: {
         options: {
           swaggerFileName: 'swagger.json',
           jsenFileName: 'jsenRules.json',
           routesFile: 'routes.js',
-          swaggerSpecs: 'routeTemplates/src/swaggerSpecs.json'
+          swaggerSpecs: 'swaggerSpecs.json'
         },
-        src: ['routeTemplates/src/controllers/**/*.json'],
-        dest: ['routeTemplates/build/']
+        src: 'routeTemplates/src/',
+        dest: 'routeTemplates/build/'
       }
     },
 
@@ -71,6 +75,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.loadNpmTasks('grunt-release');
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
